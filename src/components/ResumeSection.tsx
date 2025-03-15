@@ -1,7 +1,26 @@
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Download, FileText } from "lucide-react";
+import { Download, FileText, ExternalLink } from "lucide-react";
 
 const ResumeSection = () => {
+  const [resumeUrl, setResumeUrl] = useState("/resume.pdf");
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Check if the PDF exists by attempting to fetch it
+    const checkPdfExists = async () => {
+      try {
+        const response = await fetch(resumeUrl, { method: 'HEAD' });
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Error checking PDF:", error);
+        setIsLoading(false);
+      }
+    };
+    
+    checkPdfExists();
+  }, [resumeUrl]);
+
   return (
     <section id="resume" className="section-container">
       <h2 className="section-title">Resume</h2>
@@ -20,10 +39,16 @@ const ResumeSection = () => {
             </div>
             
             <div className="flex flex-col sm:flex-row gap-3">
-              <Button className="rounded-md gap-2">
-                <Download className="h-4 w-4" />
-                Download PDF
-              </Button>
+              <a 
+                href={resumeUrl} 
+                download
+                className="no-underline"
+              >
+                <Button className="rounded-md gap-2">
+                  <Download className="h-4 w-4" />
+                  Download PDF
+                </Button>
+              </a>
               <a 
                 href="https://drive.google.com/drive/folders/1CygdsRYNp0oD3qa2sFHRaOcNQobZNlXh?usp=drive_link" 
                 target="_blank" 
@@ -31,8 +56,8 @@ const ResumeSection = () => {
                 className="no-underline"
               >
                 <Button variant="outline" className="rounded-md gap-2">
-                  <FileText className="h-4 w-4" />
-                  View Online
+                  <ExternalLink className="h-4 w-4" />
+                  View in Drive
                 </Button>
               </a>
             </div>
@@ -40,9 +65,18 @@ const ResumeSection = () => {
           
           <div className="mt-8 border-t border-border/50 pt-8">
             <div className="aspect-[1.414/1] bg-muted/30 rounded-lg overflow-hidden">
-              <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-                Resume preview placeholder
-              </div>
+              {isLoading ? (
+                <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+                  Loading resume...
+                </div>
+              ) : (
+                <iframe
+                  src={`${resumeUrl}#view=FitH`}
+                  className="w-full h-full"
+                  title="Resume Preview"
+                  loading="lazy"
+                ></iframe>
+              )}
             </div>
           </div>
         </div>
