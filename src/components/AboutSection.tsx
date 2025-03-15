@@ -1,4 +1,3 @@
-
 import { Badge } from "@/components/ui/badge";
 import { Building, GraduationCap } from "lucide-react";
 
@@ -11,9 +10,12 @@ const AboutSection = () => {
           <div className="sticky top-24">
             <div className="relative overflow-hidden rounded-xl aspect-square">
               <div className="absolute -inset-px border-2 border-primary/20 rounded-xl"></div>
-              <div className="w-full h-full bg-muted/30 flex items-center justify-center">
-                <span className="text-muted-foreground">Profile Image Placeholder</span>
-              </div>
+              {/* Replace placeholder with actual image */}
+              <img 
+                src="/image.jpg" 
+                alt="Subhrajyoti Mahanta" 
+                className="w-full h-full object-cover"
+              />
             </div>
           </div>
         </div>
