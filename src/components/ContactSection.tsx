@@ -55,14 +55,14 @@ const ContactSection = () => {
               icon={<Linkedin className="h-5 w-5 text-primary" />}
               title="LinkedIn"
               value="Connect with me"
-              href="https://linkedin.com/in/"
+              href="https://www.linkedin.com/in/subhrajyotimahanta/"
             />
             
             <ContactCard 
               icon={<Github className="h-5 w-5 text-primary" />}
               title="GitHub"
               value="View my projects"
-              href="https://github.com/"
+              href="https://github.com/Subhrajyouti"
             />
           </div>
         </div>
