@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Download } from "lucide-react";
 import { useEffect, useState } from "react";
 
 const HeroSection = () => {
@@ -51,9 +51,12 @@ const HeroSection = () => {
               <Button
                 asChild
                 variant="outline"
-                className="rounded-md border-primary/30 text-foreground hover:bg-primary/10 transition-all"
+                className="rounded-md border-primary/30 text-foreground hover:bg-primary/10 transition-all gap-2"
               >
-                <a href="#contact">Get in Touch</a>
+                <a href="/resume.pdf" download>
+                  <Download className="h-4 w-4" />
+                  Download Resume
+                </a>
               </Button>
             </div>
           </div>
