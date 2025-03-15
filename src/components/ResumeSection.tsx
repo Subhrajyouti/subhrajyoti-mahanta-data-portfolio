@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Download, FileText } from "lucide-react";
 
@@ -25,10 +24,17 @@ const ResumeSection = () => {
                 <Download className="h-4 w-4" />
                 Download PDF
               </Button>
-              <Button variant="outline" className="rounded-md gap-2">
-                <FileText className="h-4 w-4" />
-                View Online
-              </Button>
+              <a 
+                href="https://drive.google.com/drive/folders/1CygdsRYNp0oD3qa2sFHRaOcNQobZNlXh?usp=drive_link" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="no-underline"
+              >
+                <Button variant="outline" className="rounded-md gap-2">
+                  <FileText className="h-4 w-4" />
+                  View Online
+                </Button>
+              </a>
             </div>
           </div>
           
