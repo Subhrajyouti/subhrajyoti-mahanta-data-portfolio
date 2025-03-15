@@ -1,7 +1,6 @@
 
-import { Play, Download } from "lucide-react";
+import { Play } from "lucide-react";
 import { useState, useRef } from "react";
-import { Button } from "@/components/ui/button";
 
 const IntroVideo = () => {
   const [videoPlaying, setVideoPlaying] = useState(false);
@@ -27,6 +26,11 @@ const IntroVideo = () => {
                 </div>
               </div>
               <div className="absolute inset-0 bg-gray-900/20 backdrop-blur-[2px] group-hover:backdrop-blur-0 transition-all duration-300"></div>
+              <img 
+                src="/thumbnail-image.jpg" 
+                alt="Video thumbnail" 
+                className="absolute inset-0 w-full h-full object-cover"
+              />
               <div className="absolute bottom-0 left-0 w-full p-6 bg-gradient-to-t from-black/60 to-transparent">
                 <p className="text-white text-lg font-medium">Watch my introduction video</p>
                 <p className="text-white/80 text-sm">Learn about my background and expertise in data analysis</p>
@@ -53,18 +57,6 @@ const IntroVideo = () => {
               onPause={() => setVideoPlaying(false)}
             />
           )}
-        </div>
-        
-        <div className="mt-8 flex justify-center">
-          <Button
-            asChild
-            className="rounded-md gap-2"
-          >
-            <a href="/resume.pdf" download>
-              <Download className="h-4 w-4" />
-              Download Resume
-            </a>
-          </Button>
         </div>
       </div>
     </section>
