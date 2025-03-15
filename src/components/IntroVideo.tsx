@@ -1,13 +1,17 @@
 
 import { Play, Download } from "lucide-react";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 
 const IntroVideo = () => {
   const [videoPlaying, setVideoPlaying] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   const handlePlay = () => {
     setVideoPlaying(true);
+    if (videoRef.current) {
+      videoRef.current.play();
+    }
   };
 
   return (
@@ -27,11 +31,27 @@ const IntroVideo = () => {
                 <p className="text-white text-lg font-medium">Watch my introduction video</p>
                 <p className="text-white/80 text-sm">Learn about my background and expertise in data analysis</p>
               </div>
+              {/* Hidden video element that will be displayed when play is clicked */}
+              <video 
+                ref={videoRef}
+                className="absolute inset-0 w-full h-full object-cover opacity-0"
+                src="/intro-video.mp4" // Place your video file in the public folder with this name
+                controls
+                onPlay={() => setVideoPlaying(true)}
+                onEnded={() => setVideoPlaying(false)}
+                onPause={() => setVideoPlaying(false)}
+              />
             </>
           ) : (
-            <div className="absolute inset-0 flex items-center justify-center text-muted-foreground">
-              Video placeholder - Actual video will be uploaded later
-            </div>
+            <video 
+              ref={videoRef}
+              className="absolute inset-0 w-full h-full object-cover"
+              src="/intro-video.mp4" // Place your video file in the public folder with this name
+              controls
+              autoPlay
+              onEnded={() => setVideoPlaying(false)}
+              onPause={() => setVideoPlaying(false)}
+            />
           )}
         </div>
         
