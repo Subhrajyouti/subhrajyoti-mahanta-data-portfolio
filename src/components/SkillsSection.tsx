@@ -2,12 +2,18 @@
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Database, Code, LineChart } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+
+interface Skill {
+  name: string;
+  level: number; // 0-100
+}
 
 interface SkillCategory {
   id: string;
   title: string;
   icon: React.ReactNode;
-  skills: string[];
+  skills: Skill[];
 }
 
 const skillCategories: SkillCategory[] = [
@@ -15,19 +21,35 @@ const skillCategories: SkillCategory[] = [
     id: "languages",
     title: "Languages",
     icon: <Code className="h-5 w-5" />,
-    skills: ["SQL", "Python", "R"]
+    skills: [
+      { name: "SQL", level: 90 },
+      { name: "Python", level: 85 },
+      { name: "R", level: 75 }
+    ]
   },
   {
     id: "databases",
     title: "Databases",
     icon: <Database className="h-5 w-5" />,
-    skills: ["PostgreSQL", "SQLite", "MySQL"]
+    skills: [
+      { name: "PostgreSQL", level: 85 },
+      { name: "SQLite", level: 90 },
+      { name: "MySQL", level: 80 }
+    ]
   },
   {
     id: "tools",
     title: "Tools & Libraries",
     icon: <LineChart className="h-5 w-5" />,
-    skills: ["Power BI", "MS Excel", "Tableau", "Pandas", "NumPy", "SciPy", "Matplotlib"]
+    skills: [
+      { name: "Power BI", level: 90 },
+      { name: "MS Excel", level: 95 },
+      { name: "Tableau", level: 85 },
+      { name: "Pandas", level: 80 },
+      { name: "NumPy", level: 75 },
+      { name: "SciPy", level: 70 },
+      { name: "Matplotlib", level: 85 }
+    ]
   }
 ];
 
@@ -81,7 +103,7 @@ const SkillsSection = () => {
                 )}
               >
                 <h3 className="text-2xl font-semibold mb-6">{category.title}</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   {category.skills.map((skill, index) => (
                     <SkillCard 
                       key={index} 
@@ -100,19 +122,37 @@ const SkillsSection = () => {
 };
 
 interface SkillCardProps {
-  skill: string;
+  skill: Skill;
   delay: number;
 }
 
 const SkillCard = ({ skill, delay }: SkillCardProps) => {
+  const getProficiencyLabel = (level: number) => {
+    if (level >= 90) return "Expert";
+    if (level >= 80) return "Advanced";
+    if (level >= 70) return "Proficient";
+    if (level >= 50) return "Intermediate";
+    return "Beginner";
+  };
+
   return (
     <div 
-      className="p-4 rounded-xl border border-border/50 bg-card/50 relative overflow-hidden hover:border-primary/30 hover:shadow-sm transition-all duration-300"
+      className="p-6 rounded-xl border border-border/50 bg-card/50 relative overflow-hidden hover:border-primary/30 hover:shadow-sm transition-all duration-300"
       style={{ animationDelay: `${delay}s` }}
     >
-      <div className="flex items-center justify-between">
-        <h4 className="text-lg font-medium">{skill}</h4>
-        <div className="h-2 w-2 rounded-full bg-primary/80"></div>
+      <div className="flex items-center justify-between mb-4">
+        <h4 className="text-lg font-medium">{skill.name}</h4>
+        <div className="text-sm font-medium text-primary">
+          {getProficiencyLabel(skill.level)}
+        </div>
+      </div>
+      
+      <div className="space-y-2">
+        <Progress value={skill.level} className="h-2" />
+        <div className="flex justify-between text-xs text-muted-foreground">
+          <span>Beginner</span>
+          <span>Expert</span>
+        </div>
       </div>
     </div>
   );

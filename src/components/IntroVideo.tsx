@@ -1,6 +1,7 @@
 
-import { Play } from "lucide-react";
+import { Play, Download } from "lucide-react";
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
 
 const IntroVideo = () => {
   const [videoPlaying, setVideoPlaying] = useState(false);
@@ -32,6 +33,18 @@ const IntroVideo = () => {
               Video placeholder - Actual video will be uploaded later
             </div>
           )}
+        </div>
+        
+        <div className="mt-8 flex justify-center">
+          <Button
+            asChild
+            className="rounded-md gap-2"
+          >
+            <a href="/resume.pdf" download>
+              <Download className="h-4 w-4" />
+              Download Resume
+            </a>
+          </Button>
         </div>
       </div>
     </section>
