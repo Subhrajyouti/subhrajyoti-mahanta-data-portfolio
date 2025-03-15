@@ -1,4 +1,3 @@
-
 import { Play } from "lucide-react";
 import { useState, useRef } from "react";
 
@@ -26,11 +25,6 @@ const IntroVideo = () => {
                 </div>
               </div>
               <div className="absolute inset-0 bg-gray-900/20 backdrop-blur-[2px] group-hover:backdrop-blur-0 transition-all duration-300"></div>
-              <img 
-                src="/thumbnail-image.jpg" 
-                alt="Video thumbnail" 
-                className="absolute inset-0 w-full h-full object-cover"
-              />
               <div className="absolute bottom-0 left-0 w-full p-6 bg-gradient-to-t from-black/60 to-transparent">
                 <p className="text-white text-lg font-medium">Watch my introduction video</p>
                 <p className="text-white/80 text-sm">Learn about my background and expertise in data analysis</p>
