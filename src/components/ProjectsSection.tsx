@@ -87,7 +87,7 @@ const ProjectCard = ({ project }: { project: Project }) => {
       rel="noopener noreferrer"
       className="group"
     >
-      <Card className="h-full overflow-hidden hover:shadow-lg transition-all duration-300 bg-card border border-border/50 hover:border-primary/30">
+      <Card className="h-full overflow-hidden hover:shadow-lg transition-all duration-300 bg-background border border-border/50 hover:border-primary/30">
         <div className="relative overflow-hidden aspect-video">
           <img
             src={project.image}
