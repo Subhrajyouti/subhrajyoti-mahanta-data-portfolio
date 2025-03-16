@@ -39,7 +39,7 @@ const HeroSection = () => {
               </h1>
               
               <p className="text-lg md:text-xl text-muted-foreground max-w-2xl leading-relaxed">
-                Data Analyst specializing in LIDAR sensor integration, data validation, and turning complex datasets into actionable insights.
+               Turning Complex Datasets Into Actionable Insights
               </p>
               
               <div className="flex flex-col sm:flex-row gap-4 pt-2">
@@ -63,21 +63,28 @@ const HeroSection = () => {
             </div>
           </div>
           
-          {/* Profile Photo */}
+          {/* Profile Photo with blended effect and animation */}
           <div className={`md:w-1/2 flex justify-center mt-12 md:mt-0 transition-all duration-1000 ${
             isVisible ? "opacity-100 translate-x-0" : "opacity-0 translate-x-12"
           }`}>
-            <div className="relative">
-              {/* Circle background */}
-              <div className="absolute -inset-4 rounded-full bg-gradient-to-r from-primary/20 to-primary/40 blur-sm"></div>
+            <div className="relative group">
+              {/* Gradient background glow effect */}
+              <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 via-primary/30 to-primary/10 rounded-full blur-xl opacity-70 group-hover:opacity-100 animate-pulse-slow transition-opacity duration-1000"></div>
               
-              {/* Image container - removed border-4 border-background */}
-              <div className="relative h-64 w-64 md:h-80 md:w-80 overflow-hidden rounded-full shadow-xl">
+              {/* Image container */}
+              <div className="relative h-64 w-64 md:h-80 md:w-80 overflow-hidden rounded-full">
+                <div className="absolute inset-0 bg-gradient-to-tr from-background/80 to-transparent opacity-50 mix-blend-overlay z-10"></div>
                 <img 
                   src="/profile-photo.jpg" 
                   alt="Subhrajyoti Mahanta" 
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover transition-all duration-700 ease-in-out group-hover:scale-105 group-hover:brightness-110"
                 />
+                
+                {/* Edge blending overlay */}
+                <div className="absolute inset-0 bg-gradient-to-tr from-background/40 via-transparent to-background/40 mix-blend-overlay rounded-full"></div>
+                
+                {/* Interactive glow on hover */}
+                <div className="absolute inset-0 bg-primary/10 opacity-0 group-hover:opacity-30 transition-opacity duration-500 rounded-full"></div>
               </div>
             </div>
           </div>
