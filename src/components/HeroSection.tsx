@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { ChevronDown, Download } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -70,8 +71,8 @@ const HeroSection = () => {
               {/* Circle background */}
               <div className="absolute -inset-4 rounded-full bg-gradient-to-r from-primary/20 to-primary/40 blur-sm"></div>
               
-              {/* Image container */}
-              <div className="relative h-64 w-64 md:h-80 md:w-80 overflow-hidden rounded-full border-4 border-background shadow-xl">
+              {/* Image container - removed border-4 border-background */}
+              <div className="relative h-64 w-64 md:h-80 md:w-80 overflow-hidden rounded-full shadow-xl">
                 <img 
                   src="/profile-photo.jpg" 
                   alt="Subhrajyoti Mahanta" 

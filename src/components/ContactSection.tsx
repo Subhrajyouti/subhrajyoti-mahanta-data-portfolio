@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
-import { Github, Linkedin, Mail, Send } from "lucide-react";
+import { Github, Linkedin, Mail, Phone, Send } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -49,6 +49,13 @@ const ContactSection = () => {
               title="Email"
               value="subhrajyoutimahanta@gmail.com"
               href="mailto:subhrajyoutimahanta@gmail.com"
+            />
+            
+            <ContactCard 
+              icon={<Phone className="h-5 w-5 text-primary" />}
+              title="Phone"
+              value="+91 6002967278"
+              href="tel:+916002967278"
             />
             
             <ContactCard 
