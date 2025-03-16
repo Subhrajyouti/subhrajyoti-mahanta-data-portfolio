@@ -13,7 +13,7 @@ const Footer = () => {
               Subhrajyoti<span className="text-primary">.</span>
             </div>
             <p className="text-muted-foreground mt-2 text-sm">
-              Data Analyst specializing in LIDAR sensor integration and data validation
+              Data Analyst 
             </p>
           </div>
           
@@ -26,7 +26,7 @@ const Footer = () => {
               <Mail className="h-5 w-5" />
             </a>
             <a 
-              href="https://linkedin.com/in/"
+              href="https://www.linkedin.com/in/subhrajyotimahanta/"
               target="_blank"
               rel="noopener noreferrer"
               className="p-2 rounded-full bg-muted/30 text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
@@ -35,7 +35,7 @@ const Footer = () => {
               <Linkedin className="h-5 w-5" />
             </a>
             <a 
-              href="https://github.com/"
+              href="https://github.com/Subhrajyouti"
               target="_blank"
               rel="noopener noreferrer"
               className="p-2 rounded-full bg-muted/30 text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
