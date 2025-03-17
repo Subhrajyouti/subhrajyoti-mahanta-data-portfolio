@@ -15,7 +15,7 @@ const GoodCabsSidebar = () => {
   return (
     <div className="fixed left-0 top-1/2 -translate-y-1/2 z-40">
       <div className="bg-background/90 backdrop-blur-md shadow-lg rounded-r-lg border border-border/50 overflow-hidden">
-        <div className="py-4 px-2">
+        <div className="py-4 px-3">
           <nav className="flex flex-col space-y-1">
             <SidebarLink href="#overview" icon={<Eye size={18} />} label="Overview" />
             <SidebarLink href="#data-setup" icon={<Database size={18} />} label="Data Setup" />
@@ -39,7 +39,7 @@ const SidebarLink = ({ href, icon, label }: { href: string; icon: React.ReactNod
       title={label}
     >
       <span className="text-primary">{icon}</span>
-      <span className="hidden group-hover:block">{label}</span>
+      <span>{label}</span>
     </a>
   );
 };
