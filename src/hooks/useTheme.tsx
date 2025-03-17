@@ -13,7 +13,8 @@ export function useTheme() {
       ? 'dark' 
       : 'light';
     
-    return storedTheme || systemPreference;
+    // Default to dark mode if no preference is stored
+    return storedTheme || 'dark';
   });
 
   useEffect(() => {

@@ -3,10 +3,12 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Database, Code, LineChart } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
 
 interface Skill {
   name: string;
   level: number; // 0-100
+  tags: string[];
 }
 
 interface SkillCategory {
@@ -22,9 +24,31 @@ const skillCategories: SkillCategory[] = [
     title: "Languages",
     icon: <Code className="h-5 w-5" />,
     skills: [
-      { name: "SQL", level: 90 },
-      { name: "Python", level: 85 },
-      { name: "R", level: 75 }
+      { 
+        name: "SQL", 
+        level: 90,
+        tags: ["CTEs", "Window Functions", "Joins", "Pivot Tables"]
+      },
+      { 
+        name: "Python", 
+        level: 75,
+        tags: ["Pandas", "NumPy", "Data Visualization", "Web Scraping"]
+      },
+      { 
+        name: "R", 
+        level: 35,
+        tags: ["ggplot2", "dplyr", "Tidyverse", "Statistical Modeling"]
+      },
+      { 
+        name: "C", 
+        level: 60,
+        tags: ["Data Structures", "Memory Management", "File Handling", "Algorithms"]
+      },
+      { 
+        name: "DAX", 
+        level: 60,
+        tags: ["Measures", "Calculated Columns", "Time Intelligence", "Row Context"]
+      }
     ]
   },
   {
@@ -32,9 +56,21 @@ const skillCategories: SkillCategory[] = [
     title: "Databases",
     icon: <Database className="h-5 w-5" />,
     skills: [
-      { name: "PostgreSQL", level: 85 },
-      { name: "SQLite", level: 90 },
-      { name: "MySQL", level: 80 }
+      { 
+        name: "PostgreSQL", 
+        level: 85,
+        tags: ["CTEs", "JSONB", "Partitioning", "Advanced Window Functions"]
+      },
+      { 
+        name: "SQLite", 
+        level: 70,
+        tags: ["Lightweight Databases", "Transactions", "Indexing", "Query Optimization"]
+      },
+      { 
+        name: "MySQL", 
+        level: 65,
+        tags: ["Indexing", "Stored Procedures", "Query Optimization", "Transactions"]
+      }
     ]
   },
   {
@@ -42,13 +78,46 @@ const skillCategories: SkillCategory[] = [
     title: "Tools & Libraries",
     icon: <LineChart className="h-5 w-5" />,
     skills: [
-      { name: "Power BI", level: 90 },
-      { name: "MS Excel", level: 95 },
-      { name: "Tableau", level: 85 },
-      { name: "Pandas", level: 80 },
-      { name: "NumPy", level: 75 },
-      { name: "SciPy", level: 70 },
-      { name: "Matplotlib", level: 85 }
+      { 
+        name: "Power BI", 
+        level: 75,
+        tags: ["Data Modeling", "DAX", "Report Building", "Power Query"]
+      },
+      { 
+        name: "MS Excel", 
+        level: 95,
+        tags: ["Pivot Tables", "VLOOKUP/XLOOKUP", "Power Query", "Macros"]
+      },
+      { 
+        name: "Tableau", 
+        level: 60,
+        tags: ["Calculated Fields", "Dashboard Design", "LOD Expressions", "Data Blending"]
+      },
+      { 
+        name: "Pandas", 
+        level: 80,
+        tags: ["Data Cleaning", "DataFrames", "GroupBy", "Merging & Joining"]
+      },
+      { 
+        name: "NumPy", 
+        level: 75,
+        tags: ["Arrays", "Broadcasting", "Linear Algebra", "Random Sampling"]
+      },
+      { 
+        name: "SciPy", 
+        level: 70,
+        tags: ["Statistical Functions", "Optimization", "Signal Processing", "Integration"]
+      },
+      { 
+        name: "Matplotlib", 
+        level: 85,
+        tags: ["Plot Customization", "Subplots", "Annotations", "3D Plotting"]
+      },
+      { 
+        name: "Seaborn", 
+        level: 85,
+        tags: ["Statistical Visualizations", "Heatmaps", "Pair Plots", "Regression Plots"]
+      }
     ]
   }
 ];
@@ -137,7 +206,7 @@ const SkillCard = ({ skill, delay }: SkillCardProps) => {
 
   return (
     <div 
-      className="p-6 rounded-xl border border-border/50 bg-card/50 relative overflow-hidden hover:border-primary/30 hover:shadow-sm transition-all duration-300"
+      className="p-6 rounded-xl border border-border/50 bg-card/50 relative overflow-hidden hover:border-primary/30 hover:shadow-lg transition-all duration-500 hover:-translate-y-1 shadow-md"
       style={{ animationDelay: `${delay}s` }}
     >
       <div className="flex items-center justify-between mb-4">
@@ -152,6 +221,15 @@ const SkillCard = ({ skill, delay }: SkillCardProps) => {
         <div className="flex justify-between text-xs text-muted-foreground">
           <span>Beginner</span>
           <span>Expert</span>
+        </div>
+
+        {/* Add tags for each skill */}
+        <div className="flex flex-wrap gap-2 mt-4">
+          {skill.tags.map((tag, index) => (
+            <Badge key={index} variant="secondary" className="font-normal">
+              {tag}
+            </Badge>
+          ))}
         </div>
       </div>
     </div>

@@ -3,6 +3,7 @@ import { ExternalLink } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useTheme } from "@/hooks/useTheme";
+import { Link } from "react-router-dom";
 
 interface Project {
   id: number;
@@ -61,6 +62,14 @@ const projects: Project[] = [
     image: "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
     tags: ["Python", "Data Quality", "Automation", "ETL"],
     slug: "data-quality-framework"
+  },
+  {
+    id: 7,
+    title: "GoodCabs Performance Analysis & Dashboard",
+    description: "A data-driven analysis of GoodCabs' operations using SQL, Power BI, and PostgreSQL to provide strategic insights to the Chief of Operations",
+    image: "https://unsplash.com/photos/yellow-taxi-on-concrete-road-S9qxkJN0f4Q",
+    tags: ["Power BI", "PostgreSQL", "SQL", "Data Analysis"],
+    slug: "goodcabs-analysis"
   }
 ];
 
@@ -80,14 +89,17 @@ const ProjectsSection = () => {
 };
 
 const ProjectCard = ({ project }: { project: Project }) => {
+  // Special routing for GoodCabs project
+  const projectUrl = project.slug === "goodcabs-analysis" 
+    ? "/goodcabs-analysis" 
+    : `/project/${project.slug}`;
+
   return (
-    <a 
-      href={`/project/${project.slug}`}
-      target="_blank"
-      rel="noopener noreferrer"
+    <Link 
+      to={projectUrl}
       className="group"
     >
-      <Card className="h-full overflow-hidden hover:shadow-lg transition-all duration-300 bg-background border border-border/50 hover:border-primary/30">
+      <Card className="h-full overflow-hidden hover:shadow-xl transition-all duration-500 bg-background border border-border/50 hover:border-primary/30 hover:-translate-y-2 shadow-md">
         <div className="relative overflow-hidden aspect-video">
           <img
             src={project.image}
@@ -116,7 +128,7 @@ const ProjectCard = ({ project }: { project: Project }) => {
           </div>
         </div>
       </Card>
-    </a>
+    </Link>
   );
 };
 
