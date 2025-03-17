@@ -9,6 +9,7 @@ import ProjectPage from "./pages/ProjectPage";
 import NotFound from "./pages/NotFound";
 import GoodCabsProject from "./pages/GoodCabsProject";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import "./styles/global.css";
 
 const queryClient = new QueryClient();
 

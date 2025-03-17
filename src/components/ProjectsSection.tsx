@@ -1,3 +1,4 @@
+
 import { ExternalLink } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -14,6 +15,14 @@ interface Project {
 }
 
 const projects: Project[] = [
+  {
+    id: 7,
+    title: "GoodCabs Performance Analysis & Dashboard",
+    description: "A data-driven analysis of GoodCabs' operations using SQL, Power BI, and PostgreSQL to provide strategic insights to the Chief of Operations",
+    image: "/alexander-red-S9qxkJN0f4Q-unsplash.jpg",
+    tags: ["Power BI", "PostgreSQL", "SQL", "Data Analysis"],
+    slug: "goodcabs-analysis"
+  },
   {
     id: 1,
     title: "LIDAR Sensor Data Validation",
@@ -61,14 +70,6 @@ const projects: Project[] = [
     image: "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
     tags: ["Python", "Data Quality", "Automation", "ETL"],
     slug: "data-quality-framework"
-  },
-  {
-    id: 7,
-    title: "GoodCabs Performance Analysis & Dashboard",
-    description: "A data-driven analysis of GoodCabs' operations using SQL, Power BI, and PostgreSQL to provide strategic insights to the Chief of Operations",
-    image: "/alexander-red-S9qxkJN0f4Q-unsplash.jpg",
-    tags: ["Power BI", "PostgreSQL", "SQL", "Data Analysis"],
-    slug: "goodcabs-analysis"
   }
 ];
 
@@ -93,42 +94,49 @@ const ProjectCard = ({ project }: { project: Project }) => {
     ? "/goodcabs-analysis" 
     : `/project/${project.slug}`;
 
-  return (
-    <Link 
-      to={projectUrl}
-      className="group"
-    >
-      <Card className="h-full overflow-hidden hover:shadow-xl transition-all duration-500 bg-background border border-border/50 hover:border-primary/30 hover:-translate-y-2 shadow-md">
-        <div className="relative overflow-hidden aspect-video">
-          <img
-            src={project.image}
-            alt={project.title}
-            className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-          <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-            <ExternalLink className="w-5 h-5 text-white" />
+  // Determine if external link (opens in new tab) or internal navigation
+  const renderProjectLink = () => {
+    return (
+      <a 
+        href={projectUrl} 
+        target="_blank" 
+        rel="noopener noreferrer"
+        className="group block h-full"
+      >
+        <Card className="h-full overflow-hidden hover:shadow-xl transition-all duration-500 bg-background border border-border/50 hover:border-primary/30 hover:-translate-y-2 shadow-md">
+          <div className="relative overflow-hidden aspect-video">
+            <img
+              src={project.image}
+              alt={project.title}
+              className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              <ExternalLink className="w-5 h-5 text-white" />
+            </div>
           </div>
-        </div>
-        <div className="p-5">
-          <h3 className="text-xl font-semibold mb-2 line-clamp-1">{project.title}</h3>
-          <p className="text-muted-foreground text-sm mb-4 line-clamp-2">{project.description}</p>
-          <div className="flex flex-wrap gap-2">
-            {project.tags.slice(0, 3).map((tag, index) => (
-              <Badge key={index} variant="secondary" className="font-normal">
-                {tag}
-              </Badge>
-            ))}
-            {project.tags.length > 3 && (
-              <Badge variant="outline" className="font-normal">
-                +{project.tags.length - 3}
-              </Badge>
-            )}
+          <div className="p-5">
+            <h3 className="text-xl font-semibold mb-2 line-clamp-1">{project.title}</h3>
+            <p className="text-muted-foreground text-sm mb-4 line-clamp-2">{project.description}</p>
+            <div className="flex flex-wrap gap-2">
+              {project.tags.slice(0, 3).map((tag, index) => (
+                <Badge key={index} variant="secondary" className="font-normal">
+                  {tag}
+                </Badge>
+              ))}
+              {project.tags.length > 3 && (
+                <Badge variant="outline" className="font-normal">
+                  +{project.tags.length - 3}
+                </Badge>
+              )}
+            </div>
           </div>
-        </div>
-      </Card>
-    </Link>
-  );
+        </Card>
+      </a>
+    );
+  };
+
+  return renderProjectLink();
 };
 
 export default ProjectsSection;
