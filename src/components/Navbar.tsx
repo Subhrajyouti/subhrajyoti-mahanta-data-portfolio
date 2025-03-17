@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Moon, Sun, Menu, X } from "lucide-react";
 import { useTheme } from "@/hooks/useTheme";
-import { useLocation } from "react-router-dom";
+import { useLocation, Link } from "react-router-dom";
 
 interface NavItem {
   label: string;
@@ -53,10 +53,9 @@ const Navbar = () => {
         }
       }
     } else {
-      // If not on home page and link is an anchor, navigate to home first
+      // If not on home page and link is an anchor, navigate to home page first
       if (href.startsWith('#')) {
-        // Don't prevent default to allow navigation to home page with the anchor
-        window.location.href = `/${href}`;
+        // Don't prevent default here to let the Link component handle navigation
         setMobileMenuOpen(false);
       }
     }
@@ -73,25 +72,24 @@ const Navbar = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center py-4">
           {/* Logo */}
-          <a 
-            href={isHomePage ? "#hero" : "/"} 
+          <Link 
+            to="/" 
             className="text-lg sm:text-xl font-bold text-foreground transition-all duration-300 hover:text-primary"
-            onClick={(e) => isHomePage && handleNavItemClick(e, "#hero")}
           >
             Subhrajyoti<span className="text-primary">.</span>
-          </a>
+          </Link>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
             {navItems.map((item) => (
-              <a
+              <Link
                 key={item.label}
-                href={isHomePage ? item.href : `/${item.href}`}
+                to={isHomePage ? item.href : `/${item.href}`}
                 className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors duration-200"
-                onClick={(e) => handleNavItemClick(e, item.href)}
+                onClick={(e) => isHomePage && handleNavItemClick(e, item.href)}
               >
                 {item.label}
-              </a>
+              </Link>
             ))}
             <Button 
               variant="ghost" 
@@ -145,14 +143,14 @@ const Navbar = () => {
       >
         <div className="py-5 px-4 space-y-4">
           {navItems.map((item) => (
-            <a
+            <Link
               key={item.label}
-              href={isHomePage ? item.href : `/${item.href}`}
+              to={isHomePage ? item.href : `/${item.href}`}
               className="block py-2 text-sm font-medium text-foreground hover:text-primary transition-colors"
               onClick={(e) => handleNavItemClick(e, item.href)}
             >
               {item.label}
-            </a>
+            </Link>
           ))}
         </div>
       </div>

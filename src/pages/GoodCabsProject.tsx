@@ -1,4 +1,3 @@
-
 import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { 
@@ -22,6 +21,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
+import GoodCabsSidebar from "@/components/GoodCabsSidebar";
 
 const GoodCabsProject = () => {
   // Scroll to top when component mounts
@@ -40,7 +40,7 @@ const GoodCabsProject = () => {
             alt="Yellow taxi cab on city street" 
             className="w-full h-full object-cover brightness-[0.7]"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-background flex flex-col justify-center">
+          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-background flex flex-col justify-end pb-12">
             <div className="container max-w-5xl mx-auto px-4">
               <Link to="/" className="inline-flex items-center mb-6 text-white/90 hover:text-white transition-colors">
                 <ArrowLeft className="w-4 h-4 mr-2" />
@@ -60,34 +60,8 @@ const GoodCabsProject = () => {
           </div>
         </div>
 
-        {/* Navigation Tabs as Anchor Links */}
-        <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-md border-b border-border/50 py-2">
-          <div className="container max-w-5xl mx-auto px-4">
-            <div className="flex overflow-x-auto hide-scrollbar space-x-4 py-2">
-              <a href="#overview" className="flex items-center gap-1.5 text-sm whitespace-nowrap px-3 py-1.5 rounded-full hover:bg-primary/10 transition-colors">
-                <Eye className="w-4 h-4" /> Overview
-              </a>
-              <a href="#data-setup" className="flex items-center gap-1.5 text-sm whitespace-nowrap px-3 py-1.5 rounded-full hover:bg-primary/10 transition-colors">
-                <Database className="w-4 h-4" /> Data Setup
-              </a>
-              <a href="#dashboard" className="flex items-center gap-1.5 text-sm whitespace-nowrap px-3 py-1.5 rounded-full hover:bg-primary/10 transition-colors">
-                <Monitor className="w-4 h-4" /> Dashboard
-              </a>
-              <a href="#insights" className="flex items-center gap-1.5 text-sm whitespace-nowrap px-3 py-1.5 rounded-full hover:bg-primary/10 transition-colors">
-                <Lightbulb className="w-4 h-4" /> Insights
-              </a>
-              <a href="#challenges" className="flex items-center gap-1.5 text-sm whitespace-nowrap px-3 py-1.5 rounded-full hover:bg-primary/10 transition-colors">
-                <GraduationCap className="w-4 h-4" /> Challenges
-              </a>
-              <a href="#files" className="flex items-center gap-1.5 text-sm whitespace-nowrap px-3 py-1.5 rounded-full hover:bg-primary/10 transition-colors">
-                <FileText className="w-4 h-4" /> Files
-              </a>
-              <a href="#conclusion" className="flex items-center gap-1.5 text-sm whitespace-nowrap px-3 py-1.5 rounded-full hover:bg-primary/10 transition-colors">
-                <Rocket className="w-4 h-4" /> Conclusion
-              </a>
-            </div>
-          </div>
-        </div>
+        {/* Floating Sidebar Navigation */}
+        <GoodCabsSidebar />
 
         {/* Main Content */}
         <div className="container max-w-5xl mx-auto px-4 py-8">

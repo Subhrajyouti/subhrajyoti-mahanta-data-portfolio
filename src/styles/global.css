@@ -13,3 +13,8 @@
 html {
   scroll-behavior: smooth;
 }
+
+/* Add padding to section targets for better scrolling experience */
+section[id] {
+  scroll-margin-top: 100px;
+}
