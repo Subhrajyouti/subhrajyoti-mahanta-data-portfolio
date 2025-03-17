@@ -48,7 +48,7 @@ const GoodCabsProject = () => {
               <CardContent className="p-6">
                 <p className="text-muted-foreground">
                   This project involved a comprehensive analysis of GoodCabs' operational data to 
-                  uncover insights that could drive strategic decisions. Working directly with the 
+                  uncover insights that could drive strategic decisions as a Resume Project Challange led by Codebasics Working directly with the 
                   Chief of Operations, I developed a robust data pipeline from PostgreSQL databases into 
                   an interactive Power BI dashboard, enabling real-time monitoring of critical 
                   performance metrics and business KPIs.
