@@ -1,4 +1,3 @@
-
 import { ExternalLink } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -67,7 +66,7 @@ const projects: Project[] = [
     id: 7,
     title: "GoodCabs Performance Analysis & Dashboard",
     description: "A data-driven analysis of GoodCabs' operations using SQL, Power BI, and PostgreSQL to provide strategic insights to the Chief of Operations",
-    image: "E:\PORTFOLIO\subhrajyoti-mahanta-data-portfolio\public\alexander-red-S9qxkJN0f4Q-unsplash.jpg",
+    image: "/alexander-red-S9qxkJN0f4Q-unsplash.jpg",
     tags: ["Power BI", "PostgreSQL", "SQL", "Data Analysis"],
     slug: "goodcabs-analysis"
   }
