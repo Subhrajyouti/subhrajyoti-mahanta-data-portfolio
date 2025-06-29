@@ -1,4 +1,3 @@
-
 import { ExternalLink } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -15,6 +14,14 @@ interface Project {
 }
 
 const projects: Project[] = [
+  {
+    id: 8,
+    title: "Residential Solar Viability Calculator",
+    description: "Advanced solar calculator that uses TMY data to calculate precise energy yield, system requirements, and financial analysis for residential solar installations",
+    image: "https://images.unsplash.com/photo-1509391366360-2e959784a276?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+    tags: ["Solar Energy", "TMY Data", "Energy Calculation", "Financial Analysis"],
+    slug: "solar-calculator"
+  },
   {
     id: 7,
     title: "GoodCabs Performance Analysis & Dashboard",
@@ -89,10 +96,14 @@ const ProjectsSection = () => {
 };
 
 const ProjectCard = ({ project }: { project: Project }) => {
-  // Special routing for GoodCabs project
-  const projectUrl = project.slug === "goodcabs-analysis" 
-    ? "/goodcabs-analysis" 
-    : `/project/${project.slug}`;
+  // Special routing for specific projects
+  const getProjectUrl = () => {
+    if (project.slug === "goodcabs-analysis") return "/goodcabs-analysis";
+    if (project.slug === "solar-calculator") return "/solar-calculator";
+    return `/project/${project.slug}`;
+  };
+
+  const projectUrl = getProjectUrl();
 
   // Determine if external link (opens in new tab) or internal navigation
   const renderProjectLink = () => {
