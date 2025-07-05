@@ -1,18 +1,49 @@
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
+    <base href="/">
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>insightful-portfolio-syntax</title>
-    <meta name="description" content="Lovable Generated Project" />
-    <meta name="author" content="Lovable" />
+    <title>Subhrajyouti's Portfolio</title>
+    <meta name="description" content="Portfolio showcasing data analysis projects and skills" />
+    <meta name="author" content="Subhrajyouti" />
     <meta property="og:image" content="/og-image.png" />
+    <link rel="icon" type="image/x-icon" href="./favicon.ico" />
+    
+    <!-- Redirect script to handle GitHub Pages routing -->
+    <script type="text/javascript">
+      // Single Page Apps for GitHub Pages
+      // https://github.com/rafrex/spa-github-pages
+      (function(l) {
+        if (l.search[1] === '/' ) {
+          var decoded = l.search.slice(1).split('&').map(function(s) { 
+            return s.replace(/~and~/g, '&')
+          }).join('?');
+          window.history.replaceState(null, null,
+              l.pathname.slice(0, -1) + decoded + l.hash
+          );
+        }
+      }(window.location))
+    </script>
+    
+    <!-- Google tag (gtag.js) -->
+    <script type="text/javascript"
+        src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js">
+     </script>
+     <script type="text/javascript">
+      (function(){
+      emailjs.init({
+        publicKey: "KlN_mLOb8qOn3RtDP",
+      });
+       })();
+</script>
   </head>
-
+  
   <body>
     <div id="root"></div>
     <!-- IMPORTANT: DO NOT REMOVE THIS SCRIPT TAG OR THIS VERY COMMENT! -->
     <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
-    <script type="module" src="/src/main.tsx"></script>
+    <script type="module" src="./src/main.tsx"></script>
   </body>
 </html>

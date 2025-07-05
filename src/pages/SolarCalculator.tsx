@@ -1,318 +1,507 @@
 
 import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Slider } from '@/components/ui/slider';
-import { useToast } from '@/hooks/use-toast';
-import { Calculator, Sun, Zap, MapPin, DollarSign } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Progress } from '@/components/ui/progress';
+import { Loader2, Calculator, DollarSign, Leaf, Zap, TrendingUp, Database, BarChart3, Award } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import { useToast } from '@/hooks/use-toast';
 
-interface SolarResults {
-  requiredKW: number;
-  annualProduction: number;
-  monthlySavings: number;
-  paybackPeriod: number;
-  co2Reduction: number;
+interface ApiResponse {
+  recommended_kw: number;
+  yield_per_kwp: number;
+  total_yield_kwh_year1: number;
+  total_cost: number;
+  state_subsidy: number;
+  central_subsidy: number;
+  net_cost: number;
+  npv: number;
+  irr_percent: number;
+  payback_period_years: number;
+  lifetime_savings: number;
+  co2_avoided_kg: number;
+  trees_saved_equivalent: number;
 }
 
-const SolarCalculator = () => {
-  const [monthlyConsumption, setMonthlyConsumption] = useState<number>(800);
-  const [latitude, setLatitude] = useState<string>('');
-  const [longitude, setLongitude] = useState<string>('');
-  const [roofArea, setRoofArea] = useState<number[]>([100]);
-  const [electricityRate, setElectricityRate] = useState<number>(0.12);
-  const [systemCost, setSystemCost] = useState<number>(3.5);
-  const [results, setResults] = useState<SolarResults | null>(null);
-  const [isCalculating, setIsCalculating] = useState(false);
+interface ResultData {
+  recommended_kW: number;
+  solarYield: number;
+  annualEnergy: number;
+  totalCost: number;
+  subsidy: number;
+  netCost: number;
+  monthlySavings: number;
+  annualSavings: number;
+  paybackYears: number;
+  irrPercent: number;
+  lifetimeSavings: number;
+  co2Avoided: number;
+  treesSaved: number;
+  npv: number;
+}
+
+const INDIAN_STATES = [
+  'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh',
+  'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jharkhand', 'Karnataka',
+  'Kerala', 'Madhya Pradesh', 'Maharashtra', 'Manipur', 'Meghalaya', 'Mizoram',
+  'Nagaland', 'Odisha', 'Punjab', 'Rajasthan', 'Sikkim', 'Tamil Nadu',
+  'Telangana', 'Tripura', 'Uttar Pradesh', 'Uttarakhand', 'West Bengal',
+  'Delhi', 'Puducherry', 'Chandigarh', 'Dadra and Nagar Haveli and Daman and Diu',
+  'Jammu and Kashmir', 'Ladakh', 'Lakshadweep', 'Andaman and Nicobar Islands'
+];
+
+const phases = [
+  { 
+    key: 'phase1', 
+    label: 'Solar Data Collection', 
+    description: 'Gathering precise solar radiation data for your location',
+    icon: <Database className="h-8 w-8 text-orange-500" />,
+    color: 'from-orange-400 to-red-500'
+  },
+  { 
+    key: 'phase2', 
+    label: 'Solar Energy Calculation', 
+    description: 'Estimating your rooftop solar energy production',
+    icon: <Zap className="h-8 w-8 text-yellow-500" />,
+    color: 'from-yellow-400 to-orange-500'
+  },
+  { 
+    key: 'phase3', 
+    label: 'Financial Modelling', 
+    description: 'Calculating costs, subsidies and savings',
+    icon: <BarChart3 className="h-8 w-8 text-green-500" />,
+    color: 'from-green-400 to-emerald-500'
+  },
+  { 
+    key: 'phase4', 
+    label: 'Personalized Results', 
+    description: 'Preparing your detailed solar report',
+    icon: <Award className="h-8 w-8 text-blue-500" />,
+    color: 'from-blue-400 to-purple-500'
+  }
+];
+
+const SolarCalculator: React.FC = () => {
+  const [formData, setFormData] = useState({ state: '', monthly: '', latlong: '' });
+  const [errors, setErrors] = useState<Record<string,string>>({});
+  const [loading, setLoading] = useState(false);
+  const [phaseIndex, setPhaseIndex] = useState(-1);
+  const [result, setResult] = useState<ResultData|null>(null);
   const { toast } = useToast();
 
-  const calculateSolarViability = async () => {
-    if (!latitude || !longitude) {
-      toast({
-        title: "Missing Location",
-        description: "Please enter latitude and longitude coordinates.",
-        variant: "destructive"
-      });
-      return;
-    }
+  const validate = () => {
+    const errs: Record<string,string> = {};
+    if (!formData.state) errs.state = 'Select a state';
+    if (!formData.monthly || isNaN(+formData.monthly) || +formData.monthly <= 0) errs.monthly = 'Enter valid monthly units';
+    if (!/^[-\d.]+,[-\d.]+$/.test(formData.latlong)) errs.latlong = 'Enter coords as lat,lng';
+    setErrors(errs);
+    return Object.keys(errs).length===0;
+  };
 
-    setIsCalculating(true);
+  const formatCurrency = (v: number) =>
+    new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits:0 }).format(v);
+  const formatNum = (v: number, d=1) => v.toFixed(d);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validate()) return;
+    setLoading(true);
+    setResult(null);
+    setPhaseIndex(-1);
+
+    // Step through phases with 10 second intervals
+    for (let i=0; i<phases.length-1; i++) {
+      setPhaseIndex(i);
+      await new Promise(res => setTimeout(res, 10000));
+    }
     
+    // Start final phase
+    setPhaseIndex(phases.length-1);
+
     try {
-      // Simulate TMY data processing and calculations
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      const lat = parseFloat(latitude);
-      const lon = parseFloat(longitude);
-      
-      // Calculate solar irradiance based on location (simplified model)
-      const avgSolarIrradiance = calculateSolarIrradiance(lat);
-      const systemEfficiency = 0.85; // 85% system efficiency
-      const panelWatts = 400; // 400W panels
-      
-      // Calculate required system size
-      const annualConsumption = monthlyConsumption * 12; // kWh per year
-      const requiredKW = annualConsumption / (avgSolarIrradiance * 365 * systemEfficiency);
-      
-      // Calculate annual production
-      const annualProduction = requiredKW * avgSolarIrradiance * 365 * systemEfficiency;
-      
-      // Financial calculations
-      const monthlySavings = (annualProduction / 12) * electricityRate;
-      const totalSystemCost = requiredKW * systemCost * 1000; // Cost per kW in dollars
-      const paybackPeriod = totalSystemCost / (monthlySavings * 12);
-      
-      // Environmental impact
-      const co2Reduction = annualProduction * 0.4; // kg CO2 per kWh
-      
-      setResults({
-        requiredKW: Math.round(requiredKW * 100) / 100,
-        annualProduction: Math.round(annualProduction),
-        monthlySavings: Math.round(monthlySavings * 100) / 100,
-        paybackPeriod: Math.round(paybackPeriod * 100) / 100,
-        co2Reduction: Math.round(co2Reduction)
+      const res = await fetch('https://sunlytics.onrender.com/api/calculate', {
+        method: 'POST', headers:{ 'Content-Type':'application/json' },
+        body: JSON.stringify({
+          state: formData.state,
+          monthly_units: parseFloat(formData.monthly),
+          latlong: formData.latlong
+        })
       });
-      
-      toast({
-        title: "Calculation Complete",
-        description: "Your solar viability assessment is ready!"
+      if (!res.ok) throw new Error(res.statusText);
+      const data: ApiResponse = await res.json();
+      const combinedSubsidy = data.state_subsidy + data.central_subsidy;
+      const annualSavings = data.lifetime_savings / 25;
+      const monthlySavings = annualSavings / 12;
+      setResult({
+        recommended_kW: data.recommended_kw,
+        solarYield: data.yield_per_kwp,
+        annualEnergy: data.total_yield_kwh_year1,
+        totalCost: data.total_cost,
+        subsidy: combinedSubsidy,
+        netCost: data.net_cost,
+        monthlySavings,
+        annualSavings,
+        lifetimeSavings: data.lifetime_savings,
+        paybackYears: data.payback_period_years,
+        irrPercent: data.irr_percent,
+        co2Avoided: data.co2_avoided_kg,
+        treesSaved: data.trees_saved_equivalent,
+        npv: data.npv
       });
-    } catch (error) {
-      toast({
-        title: "Calculation Error",
-        description: "There was an error processing your request. Please try again.",
-        variant: "destructive"
-      });
+      toast({ title:'Analysis Complete', description:'Your solar report is ready!' });
+    } catch(err) {
+      console.error(err);
+      toast({ title:'Error', description:'Analysis failed. Please try again.', variant:'destructive' });
     } finally {
-      setIsCalculating(false);
+      setLoading(false);
+      setPhaseIndex(-1);
     }
   };
 
-  const calculateSolarIrradiance = (latitude: number): number => {
-    // Simplified solar irradiance calculation based on latitude
-    const absLat = Math.abs(latitude);
-    if (absLat <= 23.5) return 5.5; // Tropical regions
-    if (absLat <= 40) return 4.5; // Temperate regions
-    if (absLat <= 60) return 3.5; // Higher latitudes
-    return 2.5; // Polar regions
+  const handleChange = (field:string, v:string) => {
+    setFormData(prev=>({ ...prev, [field]:v }));
+    if (errors[field]) setErrors(prev=>({ ...prev, [field]:'' }));
+  };
+
+  const handleCalculateAgain = () => {
+    setResult(null);
+    setFormData({ state: '', monthly: '', latlong: '' });
+    setErrors({});
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20">
       <Navbar />
-      <main className="flex-1 bg-gradient-to-br from-orange-50 via-yellow-50 to-amber-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-        {/* Hero Section */}
-        <section className="py-20">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <div className="flex justify-center mb-6">
-              <div className="p-3 bg-orange-100 dark:bg-orange-900 rounded-full">
-                <Sun className="h-12 w-12 text-orange-600 dark:text-orange-400" />
-              </div>
-            </div>
-            <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-orange-600 to-yellow-600 bg-clip-text text-transparent">
-              Solar Viability Calculator
-            </h1>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Calculate your home's solar potential with precision. Get personalized recommendations based on your location, consumption, and roof specifications.
-            </p>
-          </div>
-        </section>
+      
+      <div className="container mx-auto px-4 py-8">
+        {/* Header */}
+        <div className="text-center mb-12 mt-8">
+          <h1 className="text-5xl font-bold text-gray-900 dark:text-white mb-2">Sunlytics</h1>
+          <p className="text-xl text-gray-600 dark:text-gray-400 mb-8">Precision Solar Insights for Your Home</p>
+          <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+            Discover your solar potential with precise calculations and financial insights
+          </p>
+        </div>
 
-        {/* Calculator Section */}
-        <section className="py-16">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid lg:grid-cols-2 gap-8">
-              {/* Input Panel */}
-              <Card className="h-fit">
+        {/* Main Content */}
+        <div className="grid lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
+          {/* Left Side - Form (hide when results are shown) */}
+          {!result && (
+            <div className="space-y-6">
+              <Card className="glass backdrop-blur-lg bg-white/10 dark:bg-white/5 border border-white/20 dark:border-white/10 shadow-2xl hover:shadow-3xl transition-all duration-300" style={{animation: 'floating 40s ease-in-out infinite'}}>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Calculator className="h-5 w-5 text-orange-600" />
-                    System Parameters
+                  <CardTitle className="text-2xl text-gray-900 dark:text-white flex items-center gap-2">
+                    <Calculator className="h-6 w-6 text-blue-600" />
+                    Calculate Your Solar Potential
                   </CardTitle>
-                  <CardDescription>
-                    Enter your details to calculate solar viability
-                  </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-6">
-                  {/* Monthly Consumption */}
-                  <div className="space-y-2">
-                    <Label htmlFor="consumption">Monthly Electricity Consumption (kWh)</Label>
-                    <Input
-                      id="consumption"
-                      type="number"
-                      value={monthlyConsumption}
-                      onChange={(e) => setMonthlyConsumption(Number(e.target.value))}
-                      placeholder="800"
-                    />
-                  </div>
-
-                  {/* Location Inputs */}
-                  <div className="grid grid-cols-2 gap-4">
+                <CardContent>
+                  <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="space-y-2">
-                      <Label htmlFor="latitude" className="flex items-center gap-1">
-                        <MapPin className="h-4 w-4" />
-                        Latitude
-                      </Label>
-                      <Input
-                        id="latitude"
-                        type="number"
-                        step="0.000001"
-                        value={latitude}
-                        onChange={(e) => setLatitude(e.target.value)}
-                        placeholder="40.7128"
-                      />
+                      <Label className="text-gray-700 dark:text-gray-300 font-medium">State *</Label>
+                      <Select value={formData.state} onValueChange={v=>handleChange('state',v)}>
+                        <SelectTrigger className="h-12 bg-white/50 dark:bg-white/10 backdrop-blur border-white/30">
+                          <SelectValue placeholder="Select your state" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {INDIAN_STATES.map(s=><SelectItem key={s} value={s}>{s}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                      {errors.state && <p className="text-red-500 text-sm">{errors.state}</p>}
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="longitude">Longitude</Label>
-                      <Input
-                        id="longitude"
-                        type="number"
-                        step="0.000001"
-                        value={longitude}
-                        onChange={(e) => setLongitude(e.target.value)}
-                        placeholder="-74.0060"
-                      />
-                    </div>
-                  </div>
 
-                  {/* Roof Area */}
+                    <div className="space-y-2">
+                      <Label className="text-gray-700 dark:text-gray-300 font-medium">Monthly Electricity Units (kWh) *</Label>
+                      <Input 
+                        type="number" 
+                        placeholder="e.g. 300" 
+                        value={formData.monthly} 
+                        onChange={e=>handleChange('monthly',e.target.value)}
+                        className="h-12 bg-white/50 dark:bg-white/10 backdrop-blur border-white/30"
+                      />
+                      {errors.monthly && <p className="text-red-500 text-sm">{errors.monthly}</p>}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-gray-700 dark:text-gray-300 font-medium">Location Coordinates *</Label>
+                      <Input 
+                        placeholder="lat,lon (e.g. 28.6139,77.2090)" 
+                        value={formData.latlong} 
+                        onChange={e=>handleChange('latlong',e.target.value)}
+                        className="h-12 bg-white/50 dark:bg-white/10 backdrop-blur border-white/30"
+                      />
+                      <p className="text-gray-500 dark:text-gray-400 text-sm">Get coordinates from Google Maps</p>
+                      {errors.latlong && <p className="text-red-500 text-sm">{errors.latlong}</p>}
+                    </div>
+
+                    <Button 
+                      type="submit" 
+                      className="w-full h-12 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300" 
+                      disabled={loading}
+                    >
+                      {loading ? (
+                        <>
+                          <Loader2 className="animate-spin mr-2 h-5 w-5" />
+                          Analyzing...
+                        </>
+                      ) : (
+                        <>
+                          <Zap className="mr-2 h-5 w-5" />
+                          Calculate Solar Potential
+                        </>
+                      )}
+                    </Button>
+                  </form>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {/* Right Side - Loading or Results */}
+          <div className="space-y-6">
+            {/* Loading Animation */}
+            {loading && phaseIndex >= 0 && (
+              <Card className="glass backdrop-blur-lg bg-white/10 dark:bg-white/5 border border-white/20 dark:border-white/10 shadow-2xl animate-fade-in" style={{animation: 'floating 40s ease-in-out infinite'}}>
+                <CardContent className="p-8">
+                  <div className="text-center mb-8">
+                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Analyzing Your Solar Potential</h3>
+                    <p className="text-gray-600 dark:text-gray-300">Please wait while we process your data</p>
+                  </div>
+                  
                   <div className="space-y-4">
-                    <Label>Available Roof Area: {roofArea[0]} m²</Label>
-                    <Slider
-                      value={roofArea}
-                      onValueChange={setRoofArea}
-                      max={500}
-                      min={20}
-                      step={10}
-                      className="w-full"
-                    />
+                    {phases.map((phase, index) => (
+                      <div 
+                        key={phase.key}
+                        className={`flex items-center gap-4 p-4 rounded-lg transition-all duration-500 backdrop-blur ${
+                          index === phaseIndex 
+                            ? 'bg-gradient-to-r ' + phase.color + ' bg-opacity-10 scale-105 border border-blue-200/50' 
+                            : index < phaseIndex 
+                              ? 'bg-green-50/20 dark:bg-green-900/20 opacity-75 border border-green-200/50'
+                              : 'bg-gray-50/20 dark:bg-gray-800/20 opacity-50'
+                        }`}
+                      >
+                        <div className={`${index === phaseIndex ? 'animate-pulse' : ''}`}>
+                          {index < phaseIndex ? (
+                            <div className="h-12 w-12 bg-green-500 rounded-full flex items-center justify-center">
+                              <Award className="h-6 w-6 text-white" />
+                            </div>
+                          ) : (
+                            <div className="h-12 w-12 flex items-center justify-center">
+                              {phase.icon}
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="font-semibold text-gray-900 dark:text-white">{phase.label}</h4>
+                          <p className="text-sm text-gray-600 dark:text-gray-300">{phase.description}</p>
+                        </div>
+                        {index === phaseIndex && (
+                          <Loader2 className="h-5 w-5 animate-spin text-blue-600" />
+                        )}
+                      </div>
+                    ))}
                   </div>
-
-                  {/* Electricity Rate */}
-                  <div className="space-y-2">
-                    <Label htmlFor="rate" className="flex items-center gap-1">
-                      <DollarSign className="h-4 w-4" />
-                      Electricity Rate ($/kWh)
-                    </Label>
-                    <Input
-                      id="rate"
-                      type="number"
-                      step="0.01"
-                      value={electricityRate}
-                      onChange={(e) => setElectricityRate(Number(e.target.value))}
-                      placeholder="0.12"
+                  
+                  <div className="mt-6">
+                    <Progress 
+                      value={((phaseIndex + 1) / phases.length) * 100} 
+                      className="h-2"
                     />
+                    <p className="text-center text-sm text-gray-600 dark:text-gray-300 mt-2">
+                      {Math.round(((phaseIndex + 1) / phases.length) * 100)}% Complete
+                    </p>
                   </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        </div>
 
-                  {/* System Cost */}
-                  <div className="space-y-2">
-                    <Label htmlFor="cost">System Cost ($/W)</Label>
-                    <Input
-                      id="cost"
-                      type="number"
-                      step="0.1"
-                      value={systemCost}
-                      onChange={(e) => setSystemCost(Number(e.target.value))}
-                      placeholder="3.5"
-                    />
+        {/* Results Cards - Full Width, Side by Side */}
+        {!loading && result && (
+          <div className="space-y-8 animate-fade-in max-w-7xl mx-auto">
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white text-center">Your Solar Analysis</h2>
+            
+            <div className="grid md:grid-cols-3 gap-8">
+              {/* Solar Output Card */}
+              <Card className="glass backdrop-blur-lg bg-white/10 dark:bg-white/5 border border-white/20 dark:border-white/10 shadow-2xl hover:shadow-3xl transition-all duration-300" style={{animation: 'floating 40s ease-in-out infinite'}}>
+                <CardHeader className="bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-t-lg">
+                  <div className="flex items-center gap-3">
+                    <Zap className="h-8 w-8" />
+                    <CardTitle className="text-xl">Solar Output & Potential</CardTitle>
                   </div>
-
-                  <Button 
-                    onClick={calculateSolarViability} 
-                    className="w-full" 
-                    disabled={isCalculating}
-                    size="lg"
-                  >
-                    {isCalculating ? (
-                      <>
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                        Calculating...
-                      </>
-                    ) : (
-                      <>
-                        <Zap className="h-4 w-4 mr-2" />
-                        Calculate Solar Potential
-                      </>
-                    )}
-                  </Button>
+                </CardHeader>
+                <CardContent className="p-6 bg-white/50 dark:bg-white/5 backdrop-blur">
+                  <div className="space-y-4">
+                    <div className="text-center">
+                      <div className="text-3xl font-bold text-orange-600 dark:text-orange-400">{formatNum(result.recommended_kW)} kW</div>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">Recommended Load</p>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">{formatNum(result.solarYield)} kWh/kWp</div>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">Solar Potential at Your Area (per year)</p>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">{formatNum(result.annualEnergy)} kWh</div>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">Total Generation in Your System</p>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
 
-              {/* Results Panel */}
-              <div className="space-y-6">
-                {results ? (
-                  <>
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="text-green-600">System Recommendations</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="text-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                            <div className="text-2xl font-bold text-blue-600">{results.requiredKW} kW</div>
-                            <div className="text-sm text-muted-foreground">System Size Needed</div>
-                          </div>
-                          <div className="text-center p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                            <div className="text-2xl font-bold text-green-600">{results.annualProduction.toLocaleString()}</div>
-                            <div className="text-sm text-muted-foreground">kWh/Year Production</div>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
+              {/* Financial Metrics Card */}
+              <Card className="glass backdrop-blur-lg bg-white/10 dark:bg-white/5 border border-white/20 dark:border-white/10 shadow-2xl hover:shadow-3xl transition-all duration-300" style={{animation: 'floating 40s ease-in-out infinite 4s'}}>
+                <CardHeader className="bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-t-lg">
+                  <div className="flex items-center gap-3">
+                    <DollarSign className="h-8 w-8" />
+                    <CardTitle className="text-xl">Financial Metrics</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-6 bg-white/50 dark:bg-white/5 backdrop-blur">
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600 dark:text-gray-300">Total System Cost:</span>
+                      <span className="font-semibold text-gray-900 dark:text-white">{formatCurrency(result.totalCost)}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600 dark:text-gray-300">Total Subsidies:</span>
+                      <span className="font-semibold text-green-600 dark:text-green-400">{formatCurrency(result.subsidy)}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600 dark:text-gray-300">Net Investment:</span>
+                      <span className="font-semibold text-blue-600 dark:text-blue-400">{formatCurrency(result.netCost)}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600 dark:text-gray-300">Monthly Savings:</span>
+                      <span className="font-semibold text-green-600 dark:text-green-400">{formatCurrency(result.monthlySavings)}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600 dark:text-gray-300">Annual Savings:</span>
+                      <span className="font-semibold text-green-600 dark:text-green-400">{formatCurrency(result.annualSavings)}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600 dark:text-gray-300">Payback Period:</span>
+                      <span className="font-semibold text-blue-600 dark:text-blue-400">{formatNum(result.paybackYears)} years</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600 dark:text-gray-300">IRR:</span>
+                      <span className="font-semibold text-purple-600 dark:text-purple-400">{formatNum(result.irrPercent)}%</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600 dark:text-gray-300">NPV:</span>
+                      <span className="font-semibold text-purple-600 dark:text-purple-400">{formatCurrency(result.npv)}</span>
+                    </div>
+                    <div className="border-t border-white/20 pt-3 mt-3">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-600 dark:text-gray-300 font-medium">25-Year Total Savings:</span>
+                        <span className="text-lg font-bold text-green-600 dark:text-green-400">{formatCurrency(result.lifetimeSavings)}</span>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
 
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="text-green-600">Financial Analysis</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-4">
-                          <div className="flex justify-between items-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                            <span>Monthly Savings</span>
-                            <span className="font-bold text-green-600">${results.monthlySavings}</span>
-                          </div>
-                          <div className="flex justify-between items-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                            <span>Payback Period</span>
-                            <span className="font-bold text-blue-600">{results.paybackPeriod} years</span>
-                          </div>
-                          <div className="flex justify-between items-center p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
-                            <span>Annual Savings</span>
-                            <span className="font-bold text-orange-600">${(results.monthlySavings * 12).toFixed(0)}</span>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
+              {/* Environmental Impact Card */}
+              <Card className="glass backdrop-blur-lg bg-white/10 dark:bg-white/5 border border-white/20 dark:border-white/10 shadow-2xl hover:shadow-3xl transition-all duration-300" style={{animation: 'floating 40s ease-in-out infinite 8s'}}>
+                <CardHeader className="bg-gradient-to-r from-teal-500 to-green-500 text-white rounded-t-lg">
+                  <div className="flex items-center gap-3">
+                    <Leaf className="h-8 w-8" />
+                    <CardTitle className="text-xl">Environmental Impact</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-6 bg-white/50 dark:bg-white/5 backdrop-blur">
+                  <div className="space-y-6">
+                    <div className="text-center">
+                      <div className="text-4xl font-bold text-teal-600 dark:text-teal-400">{formatNum(result.co2Avoided/1000, 1)}</div>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">Metric tons CO₂ avoided over 25 years</p>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-4xl font-bold text-green-600 dark:text-green-400">{result.treesSaved}</div>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">Trees equivalent planted</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
 
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="text-green-600">Environmental Impact</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="text-center p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                          <div className="text-2xl font-bold text-green-600">{results.co2Reduction.toLocaleString()} kg</div>
-                          <div className="text-sm text-muted-foreground">CO₂ Reduction per Year</div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </>
-                ) : (
-                  <Card>
-                    <CardContent className="flex flex-col items-center justify-center py-12">
-                      <Sun className="h-16 w-16 text-muted-foreground mb-4" />
-                      <h3 className="text-lg font-semibold mb-2">Ready to Calculate</h3>
-                      <p className="text-center text-muted-foreground">
-                        Enter your details and click calculate to see your solar potential
-                      </p>
-                    </CardContent>
-                  </Card>
-                )}
+            {/* Calculate Again Button */}
+            <div className="text-center mt-8">
+              <Button 
+                onClick={handleCalculateAgain}
+                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold px-8 py-3 shadow-lg hover:shadow-xl transition-all duration-300"
+              >
+                <Calculator className="mr-2 h-5 w-5" />
+                Calculate Again
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* How It Works Section */}
+        {!loading && result && (
+          <div className="mt-16 max-w-4xl mx-auto">
+            <h2 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-12">How Our Calculator Works</h2>
+            <div className="grid md:grid-cols-2 gap-8">
+              <div className="glass backdrop-blur-lg bg-white/10 dark:bg-white/5 border border-white/20 dark:border-white/10 rounded-lg p-6 shadow-2xl hover:shadow-3xl transition-all duration-300" style={{animation: 'floating 40s ease-in-out infinite'}}>
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-12 h-12 bg-orange-100/50 dark:bg-orange-900/50 backdrop-blur rounded-lg flex items-center justify-center">
+                    <Database className="h-6 w-6 text-orange-600 dark:text-orange-400" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Solar Data Collection</h3>
+                </div>
+                <p className="text-gray-600 dark:text-gray-300">
+                  We gather precise solar radiation data for your exact location using trusted global sources (NREL). 
+                  This ensures highly accurate and personalized results.
+                </p>
+              </div>
+
+              <div className="glass backdrop-blur-lg bg-white/10 dark:bg-white/5 border border-white/20 dark:border-white/10 rounded-lg p-6 shadow-2xl hover:shadow-3xl transition-all duration-300" style={{animation: 'floating 40s ease-in-out infinite 4s'}}>
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-12 h-12 bg-yellow-100/50 dark:bg-yellow-900/50 backdrop-blur rounded-lg flex items-center justify-center">
+                    <Zap className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Solar Energy Calculation</h3>
+                </div>
+                <p className="text-gray-600 dark:text-gray-300">
+                  Advanced simulations estimate exactly how much solar energy your rooftop system can produce each year, 
+                  based on your location and standard equipment.
+                </p>
+              </div>
+
+              <div className="glass backdrop-blur-lg bg-white/10 dark:bg-white/5 border border-white/20 dark:border-white/10 rounded-lg p-6 shadow-2xl hover:shadow-3xl transition-all duration-300" style={{animation: 'floating 40s ease-in-out infinite 8s'}}>
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-12 h-12 bg-green-100/50 dark:bg-green-900/50 backdrop-blur rounded-lg flex items-center justify-center">
+                    <BarChart3 className="h-6 w-6 text-green-600 dark:text-green-400" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Financial Modelling</h3>
+                </div>
+                <p className="text-gray-600 dark:text-gray-300">
+                  Detailed financial calculations factor in your state's electricity tariffs, subsidies, and costs, 
+                  clearly showing your potential savings, payback period, and returns.
+                </p>
+              </div>
+
+              <div className="glass backdrop-blur-lg bg-white/10 dark:bg-white/5 border border-white/20 dark:border-white/10 rounded-lg p-6 shadow-2xl hover:shadow-3xl transition-all duration-300" style={{animation: 'floating 40s ease-in-out infinite 12s'}}>
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-12 h-12 bg-blue-100/50 dark:bg-blue-900/50 backdrop-blur rounded-lg flex items-center justify-center">
+                    <Award className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Personalized Results</h3>
+                </div>
+                <p className="text-gray-600 dark:text-gray-300">
+                  Receive clear, actionable insights like recommended system size, net installation cost, savings, 
+                  payback period, environmental benefits, and lifetime returns.
+                </p>
               </div>
             </div>
           </div>
-        </section>
-      </main>
+        )}
+      </div>
+      
       <Footer />
     </div>
   );
