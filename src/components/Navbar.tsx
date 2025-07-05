@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Moon, Sun, Menu, X } from "lucide-react";
@@ -40,17 +41,37 @@ const Navbar = () => {
     setTheme(theme === "dark" ? "light" : "dark");
   };
 
+  // Improved scroll handling to prevent jumping
+  const scrollToSection = (href: string) => {
+    const element = document.querySelector(href);
+    if (element) {
+      // Stop any existing scroll behavior
+      window.scrollTo({
+        top: window.scrollY,
+        behavior: 'auto'
+      });
+      
+      // Small delay to ensure previous scroll is stopped
+      setTimeout(() => {
+        const elementTop = element.getBoundingClientRect().top + window.scrollY;
+        const offsetTop = elementTop - 100; // Account for fixed navbar
+        
+        window.scrollTo({
+          top: offsetTop,
+          behavior: 'smooth'
+        });
+      }, 50);
+    }
+  };
+
   // Handle link clicks for navigation items
   const handleNavItemClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     // Only apply special handling on home page
     if (isHomePage) {
       if (href.startsWith('#')) {
         e.preventDefault();
-        const element = document.querySelector(href);
-        if (element) {
-          element.scrollIntoView({ behavior: 'smooth' });
-          setMobileMenuOpen(false);
-        }
+        scrollToSection(href);
+        setMobileMenuOpen(false);
       }
     } else {
       // If not on home page and link is an anchor, navigate to home page first
