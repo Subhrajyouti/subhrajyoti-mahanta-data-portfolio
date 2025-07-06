@@ -178,28 +178,28 @@ const SolarCalculator: React.FC = () => {
       
       <div className="container mx-auto px-4 py-6">
         {/* Header */}
-        <div className="text-center mb-8">
-          <div className="flex justify-center items-center mb-2">
+        <div className="text-center mb-2">
+          <div className="flex justify-center items-center mb-0">
             <img 
-              src="/lovable-uploads/8a33c45a-43ec-4541-9b7f-61c5ac392b48.png" 
+              src="/sunlyticslogo.png" 
               alt="Sunlytics - Precision Solar Insights" 
-              className="h-16 md:h-20 w-auto mx-auto mb-1"
+              className="h-16 md:h-20 w-auto mx-auto mb-0"
             />
           </div>
-          <p className="text-lg text-gray-600 dark:text-gray-400 mb-2">
+          <p className="text-lg text-gray-600 dark:text-gray-400 mb-0">
             Precision Solar Insights for Your Home
           </p>
         </div>
 
         {/* Main Content */}
-        <div className="grid lg:grid-cols-2 gap-12 max-w-4xl mx-auto px-4">
+        <div className="grid lg:grid-cols-2 gap-12 max-w-4xl mx-auto px-1 items-stretch">
 
           {/* Left Side - Form (hide when results are shown) */}
           {!result && (
-            <div className="space-y-6 max-w-sm ml-2 lg:ml-8">
+            <div className="space-y-4 max-w-sm ml-2 lg:ml-8 h-full">
 
-              <Card className="glass backdrop-blur-lg bg-white/10 dark:bg-white/5 border border-white/20 dark:border-white/10 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 hover:-translate-y-1 hover:brightness-110 hover:shadow-blue-500/20" style={{animation: 'floating 40s ease-in-out infinite'}}>
-                <CardHeader className="pb-4">
+              <Card className="h-full glass backdrop-blur-lg bg-white/10 dark:bg-white/5 border border-white/20 dark:border-white/10 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 hover:-translate-y-1 hover:brightness-110 hover:shadow-blue-500/20" style={{animation: 'floating 40s ease-in-out infinite'}}>
+                <CardHeader className="pb-3">
                   <CardTitle className="text-lg text-gray-900 dark:text-white flex items-center gap-2">
                     <Calculator className="h-5 w-5 text-blue-600" />
                     Calculate Your Solar Potential
@@ -268,7 +268,7 @@ const SolarCalculator: React.FC = () => {
           )}
 
           {/* Right Side - Enhanced Benefits Cards */}
-          <div className="space-y-4">
+          <div className="space-y-4 h-full">
             {/* Show enhanced solar benefits when form is visible and not loading */}
             {!result && !loading && (
               <div className="space-y-3">
