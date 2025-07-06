@@ -113,58 +113,29 @@ const SolarCalculator: React.FC = () => {
     setResult(null);
     setPhaseIndex(-1);
 
-    // Start API call immediately
-    const apiCall = fetch('https://sunlytics.onrender.com/api/calculate', {
-      method: 'POST', 
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        state: formData.state,
-        monthly_units: parseFloat(formData.monthly),
-        latlong: formData.latlong
-      })
-    });
-
-    // Start phase animation after a brief delay
-    setTimeout(() => {
-      const phaseInterval = setInterval(() => {
-        setPhaseIndex(prev => {
-          if (prev >= phases.length - 1) {
-            clearInterval(phaseInterval);
-            return prev;
-          }
-          return prev + 1;
-        });
-      }, 2000); // 2 seconds between phases
-
-      // Start first phase immediately
-      setPhaseIndex(0);
-    }, 500);
+    // Step through phases with 10 second intervals
+    for (let i=0; i<phases.length-1; i++) {
+      setPhaseIndex(i);
+      await new Promise(res => setTimeout(res, 200));
+    }
+    
+    // Start final phase
+    setPhaseIndex(phases.length-1);
 
     try {
-      const res = await apiCall;
+      const res = await fetch('https://sunlytics.onrender.com/api/calculate', {
+        method: 'POST', headers:{ 'Content-Type':'application/json' },
+        body: JSON.stringify({
+          state: formData.state,
+          monthly_units: parseFloat(formData.monthly),
+          latlong: formData.latlong
+        })
+      });
       if (!res.ok) throw new Error(res.statusText);
       const data: ApiResponse = await res.json();
-      
-      // Wait for phases to complete if API finishes first
-      const waitForPhases = () => {
-        return new Promise<void>((resolve) => {
-          const checkPhases = () => {
-            if (phaseIndex >= phases.length - 1) {
-              resolve();
-            } else {
-              setTimeout(checkPhases, 500);
-            }
-          };
-          checkPhases();
-        });
-      };
-
-      await waitForPhases();
-      
       const combinedSubsidy = data.state_subsidy + data.central_subsidy;
       const annualSavings = data.lifetime_savings / 25;
       const monthlySavings = annualSavings / 12;
-      
       setResult({
         recommended_kW: data.recommended_kw,
         solarYield: data.yield_per_kwp,
@@ -181,7 +152,6 @@ const SolarCalculator: React.FC = () => {
         treesSaved: data.trees_saved_equivalent,
         npv: data.npv
       });
-      
       toast({ title:'Analysis Complete', description:'Your solar report is ready!' });
     } catch(err) {
       console.error(err);
